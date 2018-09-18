@@ -25,8 +25,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	// Find the number of threads that the thread pool should contain. An async queue should contain one
 	// thread and a sync queue should contain the same number of threads as there are physical cores.
 	int numThreads; 
+
+	dispatch_queue_t *queueType = queue->queue_type;
 	
-	if (&(queue->queue_type) == SERIAL) {
+	if (&queueType == SERIAL) {
 		numThreads = 1;
 	}
 	else {
