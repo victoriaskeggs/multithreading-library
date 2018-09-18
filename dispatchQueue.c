@@ -71,5 +71,5 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 	}
 
 	// Free the memory allocated to the thread pool
-	free(*(queue->thread_pool));
+	free(queue->thread_pool);
 }
