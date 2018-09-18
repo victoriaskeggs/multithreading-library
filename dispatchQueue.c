@@ -32,6 +32,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	else {
 		numThreads = getNumCores();
 	}
+	queue->num_threads = numThreads;
 
 	// Allocate memory to the thread pool
 	queue->thread_pool = malloc(numThreads * sizeof(dispatch_queue_thread_t));
@@ -55,4 +56,20 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	return queue;
 
+}
+
+/*
+ * Destroys the dispatch queue queue. All allocated memory and resources such as semaphores are
+ * released and returned.
+ */
+void dispatch_queue_destroy(dispatch_queue_t *queue) {
+
+	// Free any semaphores assigned to threads
+	for (int i = 0; i < queue->num_threads; i++) {
+		dispatch_queue_thread_t thread = queue->thread_pool[i];
+		sem_destroy(&thread.thread_semaphore);
+	}
+
+	// Free the memory allocated to the thread pool
+	free(*(queue->thread_pool));
 }
