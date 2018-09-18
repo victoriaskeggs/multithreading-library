@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <sys/sysinfo.h>
 
+int getNumCores();
+
 /*
  * Prints the number of physical cores on the device to the console.
  */
