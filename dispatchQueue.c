@@ -8,6 +8,7 @@
 #include "dispatchQueue.h"
 #include "num_cores.c"
 #include <stdlib.h>
+#include <string.h>
 
 #define ERROR_STATUS 1
 
@@ -88,7 +89,7 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 	task_t *thisTask;
 
 	// Set the name of the task
-	strcopy(thisTask->name, name);
+	strcpy(thisTask->name, name);
 
 	// Set the work for the task
 	thisTask->work = work;
