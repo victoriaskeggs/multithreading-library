@@ -27,6 +27,11 @@
         void *params;               // parameters to pass to the function
         task_dispatch_type_t type;  // asynchronous or synchronous
     } task_t;
+
+	typedef struct node {	// to create linked lists
+		void *item;
+		struct node *next;
+	} node_t;
     
     typedef struct dispatch_queue_t dispatch_queue_t; // the dispatch queue type
     typedef struct dispatch_queue_thread_t dispatch_queue_thread_t; // the dispatch queue thread type
@@ -35,11 +40,13 @@
         dispatch_queue_t *queue;// the queue this thread is associated with
         pthread_t thread;       // the thread which runs the task
         sem_t thread_semaphore; // the semaphore the thread waits on until a task is allocated
-        task_t *task;           // the current task for this tread
+        task_t *task;           // the current task for this thread
     };
 
     struct dispatch_queue_t {
-        queue_type_t queue_type;            // the type of queue - serial or concurrent
+        queue_type_t *queue_type;				// the type of queue - serial or concurrent
+		dispatch_queue_thread_t *thread_pool;	// a dynamically sized thread pool to execute the tasks
+		node_t *first_task;						// linked list of tasks
     };
     
     task_t *task_create(void (*)(void *), void *, char*);

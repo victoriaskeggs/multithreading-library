@@ -1,0 +1,64 @@
+/*
+* File:   dispatchQueue.c
+* Author: vske511
+*
+*/
+
+#include <stdio.h>
+#include <dispatchQueue.h>
+#include <num_cores.c>
+#include <stdlib.h>
+
+#define ERROR_STATUS 1
+
+/**
+ * Creates a dispatch queue, setting up any associated threads and a linked list to be used by
+ * the added tasks. The queueType is either CONCURRENT or SERIAL.
+ * Returns: A pointer to the created dispatch queue.
+ */
+dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
+
+	// Define the queue and queue type
+	dispatch_queue_t queue;
+	queue.queue_type = *queueType;
+
+	// The linked list of tasks should be empty
+	queue.first_task = NULL;
+
+	// Find the number of threads that the thread pool should contain. An async queue should contain one
+	// thread and a sync queue should contain the same number of threads as there are physical cores.
+	int numThreads; 
+	
+	if (queue.queue_type == queue_type_t.SERIAL) {
+		numThreads = 1;
+	}
+	else {
+		numThreads = getNumCores();
+	}
+
+	// Allocate memory to the thread pool
+	queue.thread_pool = (dispatch_queue_thread_t *)malloc(numThreads * sizeof(*dispatch_queue_thread_t));
+
+	// Check memory was successfully allocated
+	if (queue.thread_pool == NULL) {
+		printf("Not enough memory available to create a thread pool for this queue.");
+		exit(ERROR_STATUS);
+	}
+
+	// Add threads to the thread pool
+	for (int i = 0; i < numThreads; i++) {
+
+		// Create a new thread
+		dispatch_queue_thread_t thread;
+		thread.queue = &queue;
+		thread.thread = NULL;
+		thread.thread_semaphore = NULL;
+		thread.task = NULL;
+
+		// Add the thread to the pool
+		queue.thread_pool[i] = *thread;
+	}
+
+	return &queue;
+
+}
