@@ -73,3 +73,28 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 	// Free the memory allocated to the thread pool
 	free(queue->thread_pool);
 }
+
+/*
+ * Creates a task. work is the function to be called when the task is executed, param is a pointer to
+ * either a structure which holds all of the parameters for the work function to execute with or a single
+ * parameter which the work function uses. If it is a single parameter it must either be a pointer or
+ * something which can be cast to or from a pointer. The name is a string of up to 63 characters. This
+ * is useful for debugging purposes.
+ * Returns: A pointer to the created task.
+ */
+task_t *task_create(void(*work)(void *), void *param, char* name) {
+
+	// Create a task
+	task_t *thisTask;
+
+	// Set the name of the task
+	strcopy(thisTask->name, name);
+
+	// Set the work for the task
+	thisTask->work = work;
+
+	// Set the parameters for the work
+	thisTask->params = param;
+
+	return thisTask;
+}
