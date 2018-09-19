@@ -90,6 +90,13 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	printf("Thread semaphore created\n");
 
+	// Check semaphore values
+	int value, newValue;
+	sem_getvalue(&(queue->thread_semaphore), &value);
+	printf("Create method: thread semaphore has value %d\n", value);
+	sem_getvalue(&(queue->queue_lock), &value);
+	printf("Create method: queue lock has value %d\n", newValue);
+
 	printf("Num threads to create is %d\n", numThreads);
 
 	// Add threads to the thread pool
@@ -131,14 +138,6 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	sem_post(&(queue->queue_lock));
 
 	printf("Queue unlocked\n");
-
-	// Check semaphore values
-	int value, newValue;
-	sem_getvalue(&(queue->thread_semaphore), &value);
-	printf("Thread semaphore has value %d\n", value);
-	sem_getvalue(&(queue->queue_lock), &value);
-	printf("Queue lock has value %d\n", newValue);
-
 
 	return queue;
 
