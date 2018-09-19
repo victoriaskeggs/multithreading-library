@@ -132,6 +132,14 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	printf("Queue unlocked\n");
 
+	// Check semaphore values
+	int value, newValue;
+	sem_getvalue(&(queue->thread_semaphore), &value);
+	printf("Thread semaphore has value %d\n", value);
+	sem_getvalue(&(queue->queue_lock), &value);
+	printf("Queue lock has value %d\n", newValue);
+
+
 	return queue;
 
 }
@@ -149,7 +157,6 @@ void *execute_tasks(void *threadUncast) {
 
 		int value;
 		sem_getvalue(&(thread->queue->thread_semaphore), &value);
-
 		printf("Thread semaphore has value %d\n", value);
 
 		printf("Waiting on the thread semaphore\n");
@@ -158,7 +165,6 @@ void *execute_tasks(void *threadUncast) {
 		sem_wait(&(thread->queue->thread_semaphore));
 
 		sem_getvalue(&(thread->queue->queue_lock), &value);
-
 		printf("Queue lock has value %d\n", value);
 
 		printf("Waiting for the queue lock\n");
