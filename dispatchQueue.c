@@ -93,12 +93,18 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
 
+		printf("For loop entered\n");
+
 		// Create a new thread type
 		dispatch_queue_thread_t *thread;
+		printf("About to point thread to queue\n");
 		thread->queue = queue;
+		printf("Pointed thread to queue\n");
 
 		// Add the thread type to the pool
+		printf("About to add thread type to pool\n");
 		queue->thread_pool[i] = *thread;
+		printf("Added thread type to pool\n");
 
 		printf("Creating pthread number %d\n", i);
 
