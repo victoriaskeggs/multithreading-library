@@ -129,6 +129,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 			printf("Error creating thread\n");
 			exit(ERROR_STATUS);
 		}
+
+		printf("Exiting from create method\n");
+		exit(0);
+
 		// Check semaphore values
 		//int value, newValue;
 		//sem_getvalue(&(queue->thread_semaphore), &value);
@@ -167,9 +171,12 @@ void *execute_tasks(void *threadUncast) {
 		printf("Thread method: thread semaphore has value %d\n", value);
 		sem_getvalue(&(thread->queue->queue_lock), &newValue);
 		printf("Thread method: queue lock has value %d\n", newValue);
+		
+		printf("Exiting from thread method");
+		exit(0);
 
 		// Check thread values
-		printf("Number of threads: %d\n", thread->queue->num_threads);
+		//printf("Number of threads: %d\n", thread->queue->num_threads);
 
 		printf("Waiting on the thread semaphore\n");
 
