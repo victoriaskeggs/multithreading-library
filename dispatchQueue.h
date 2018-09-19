@@ -39,17 +39,16 @@
     struct dispatch_queue_thread_t {
         dispatch_queue_t *queue;// the queue this thread is associated with
         pthread_t thread;       // the thread which runs the task
-        sem_t thread_semaphore; // the semaphore the thread waits on until a task is allocated
         task_t *task;           // the current task for this thread
     };
 
     struct dispatch_queue_t {
         queue_type_t *queue_type;				// the type of queue - serial or concurrent
 		dispatch_queue_thread_t *thread_pool;	// a dynamically sized thread pool to execute the tasks
-		dispatch_queue_thread_t task_allocator_thread; // allocates tasks added to the queue to threads in the pool
 		int num_threads;						// the number of threads in the thread pool
 		node_t *first_task;						// linked list of tasks
-		sem_t queue_semaphore;					// for locking the queue
+		sem_t queue_lock;						// for locking the queue
+		sem_t thread_semaphore;					// the semaphore the threads wait on until a task is allocated
     };
     
     task_t *task_create(void (*)(void *), void *, char*);

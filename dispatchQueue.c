@@ -35,7 +35,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	queue->queue_type = &queueType;
 
 	// Create a semaphore for the queue and lock the queue
-	sem_init(&(queue->queue_semaphore), P_SHARED, 0);
+	sem_init(&(queue->queue_lock), P_SHARED, 0);
 
 	// Find the number of threads that the thread pool should contain. An async queue should contain one
 	// thread and a sync queue should contain the same number of threads as there are physical cores.
@@ -61,7 +61,8 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		exit(ERROR_STATUS);
 	}
 
-	// TODO Set up the task allocator thread
+	// Create a semaphore for the threads to wait on - no tasks allocated
+	sem_init(&(queue->thread_semaphore), P_SHARED, 0);
 
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
@@ -70,46 +71,51 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		dispatch_queue_thread_t *thread;
 		thread->queue = queue;
 
-		// Create a semaphore for the thread - no tasks allocated
-		sem_init(&(thread->thread_semaphore), P_SHARED, 0);
-
 		// Add the thread type to the pool
 		queue->thread_pool[i] = *thread;
 
 		// Start the thread dispatching tasks off the end of the queue
-		if (pthread_create(&(thread->thread), NULL, execute_tasks, NULL)) {
+		if (pthread_create(&(thread->thread), NULL, execute_tasks, &thread)) {
 			printf("Error creating thread\n");
 			exit(ERROR_STATUS);
 		}
 	}
 
 	// Unlock the queue
-	sem_post(&(queue->queue_semaphore));
+	sem_post(&(queue->queue_lock));
 
 	return queue;
 
 }
 
-/*
- * Pulls tasks off a queue and allocates them to threads in the queue's thread pool
- */
-void allocate_tasks() {
-
-	while (true) {
-
-		// Wait for a task to be added to the task list
-	}
-}
-
-void execute_tasks() {
+void execute_tasks(dispatch_queue_thread_t *thread) {
 
 	while (true) {
 
 		// Wait on the thread semaphore for a task to become available
+		sem_wait(&(thread->queue->thread_semaphore));
+
+		// Wait for the queue to become available
+		sem_wait(&(thread->queue->queue_lock));
+
+		// Grab the first task off the queue
+		task_t *task = &thread->queue->first_task->item;
+
+		// Take the task out of the queue
+		thread->queue->first_task = &thread->queue->first_task->next;
+
+		// Release the queue lock
+		sem_post(&(thread->queue->queue_lock));
+
+		// Update the current task
+		thread->task = &task;
 
 		// Execute the task
+		task->work(&task->params);
 
-		// Delete the task
+		// Destroy the task
+		task_destroy(&task);
+
 	}
 }
 
@@ -120,20 +126,19 @@ void execute_tasks() {
 void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
 	// Wait for the queue to become available
-	sem_wait(&(queue->queue_semaphore));
+	sem_wait(&(queue->queue_lock));
 
-	// Destroy the queue's semaphore
-	sem_destroy(&(queue->queue_semaphore));
+	// Destroy the queue's lock
+	sem_destroy(&(queue->queue_lock));
+
+	// Destroy the thread semaphore
+	sem_destroy(&(queue->thread_semaphore));
 
 	// For every thread in the thread pool
 	for (int i = 0; i < queue->num_threads; i++) {
 		dispatch_queue_thread_t thread = queue->thread_pool[i];
 
-		// Wait for the thread to have no tasks left on it
-		//sem_wait(&thread.thread_semaphore);
-
-		// Destroy the thread's semaphore
-		sem_destroy(&thread.thread_semaphore);
+		// TODO deallocate the memory?
 	}
 
 	// Free the memory allocated to the thread pool
@@ -180,10 +185,6 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
  */
 void task_destroy(task_t *task) {
 
-	// Remove the task from the queue when the queue is free
-
-	// Signal the queue is free
-
 	// Free memory allocated to the task
 	free(task);
 }
@@ -201,9 +202,24 @@ void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
  * returns immediately, the task will be dispatched sometime in the future.
  */
 void dispatch_async(dispatch_queue_t *queue, task_t *task) {
-	
-	// Wait for the queue to become available
-	sem_wait(&(queue->queue_semaphore));
+
+	// Set task as async
+	task->type = ASYNC;
+
+	// Allocate memory to new task type
+	node_t *newTask = malloc(sizeof(node_t));
+
+	// Check memory was successfully allocated
+	if (newTask == NULL) {
+		printf("Not enough memory available to add the task to the queue.");
+		exit(ERROR_STATUS);
+	}
+
+	// Add the task to the task type
+	newTask->item = task;
+
+	// Wait for the dispatch queue to become available
+	sem_wait(&(queue->queue_lock));
 
 	// Find the end of the task queue
 	node_t *currentTask = queue->first_task;
@@ -211,20 +227,12 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 		currentTask = currentTask->next;
 	}
 
-	// Allocate memory to the end of the queue
-	currentTask = malloc(sizeof(node_t));
+	// Add the new task
+	currentTask = newTask;
 
-	// Check memory was successfully allocated
-	if (currentTask == NULL) {
-		printf("Not enough memory available to add the task to the queue.");
-		exit(ERROR_STATUS);
-	}
+	// Unlock the queue
+	sem_post(&(queue->queue_lock));
 
-	// Add the task to the end of the queue
-	currentTask->item = task;
-
-	// Signal the allocator thread that a task is available to be allocated
-
-	// Signal that the queue is available again
-	sem_post(&(queue->queue_semaphore));
+	// Signal the threads that a new task is available
+	sem_post(&(queue->thread_semaphore));
 }
