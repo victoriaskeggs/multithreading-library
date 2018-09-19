@@ -90,6 +90,8 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	printf("Thread semaphore created\n");
 
+	printf("Num threads to create is %d\n", numThreads);
+
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
 
@@ -136,16 +138,35 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 void *execute_tasks(void *threadUncast) {
 
+	printf("Execute tasks is executed\n");
+
 	// Cast the thread
 	dispatch_queue_thread_t *thread = (dispatch_queue_thread_t*)threadUncast;
 
+	printf("Thread has been cast\n");
+
 	while (1) {
+
+		int value;
+		sem_getvalue(&(thread->queue->thread_semaphore), &value);
+
+		printf("Thread semaphore has value %d\n", value);
+
+		printf("Waiting on the thread semaphore\n");
 
 		// Wait on the thread semaphore for a task to become available
 		sem_wait(&(thread->queue->thread_semaphore));
 
+		sem_getvalue(&(thread->queue->queue_lock), &value);
+
+		printf("Queue lock has value %d\n", value);
+
+		printf("Waiting for the queue lock\n");
+
 		// Wait for the queue to become available
 		sem_wait(&(thread->queue->queue_lock));
+
+		printf("Grabbing a task\n");
 
 		// Grab the first task off the queue
 		task_t *task = thread->queue->first_task->item;

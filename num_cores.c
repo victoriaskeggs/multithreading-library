@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
 	
 	// Print number of cores to the console
 	int numCores = getNumCores();
-	printf("This machine has %d cores.", numCores);
+	printf("This machine has %d cores.\n", numCores);
 }
 
 /*
