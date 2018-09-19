@@ -97,7 +97,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	sem_getvalue(&(queue->queue_lock), &newValue);
 	printf("Create method: queue lock has value %d\n", newValue);
 
-	printf("Num threads to create is %d\n", numThreads);
+	//printf("Num threads to create is %d\n", numThreads);
 
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
