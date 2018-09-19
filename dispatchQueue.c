@@ -95,8 +95,15 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 		printf("For loop entered\n");
 
-		// Create a new thread type
-		dispatch_queue_thread_t *thread;
+		// Create a new thread type and allocate memory
+		dispatch_queue_thread_t *thread = malloc(sizeof(dispatch_queue_thread_t));
+
+		// Check memory was successfully allocated
+		if (thread == NULL) {
+			printf("Not enough memory available to create a thread for this queue.");
+			exit(ERROR_STATUS);
+		}
+
 		printf("About to point thread to queue\n");
 		thread->queue = queue;
 		printf("Pointed thread to queue\n");
@@ -180,7 +187,8 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 	for (int i = 0; i < queue->num_threads; i++) {
 		dispatch_queue_thread_t thread = queue->thread_pool[i];
 
-		// TODO deallocate the memory?
+		// Free the memory assigned to the thread
+		free(&thread);
 	}
 
 	// Free the memory allocated to the thread pool
