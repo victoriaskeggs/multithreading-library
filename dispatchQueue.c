@@ -185,7 +185,7 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
 	// For every thread in the thread pool
 	for (int i = 0; i < queue->num_threads; i++) {
-		dispatch_queue_thread_t thread = queue->thread_pool[i];
+		dispatch_queue_thread_t *thread = &(queue->thread_pool[i]);
 
 		// Free the memory assigned to the thread
 		free(&thread);
