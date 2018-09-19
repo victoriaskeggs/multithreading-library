@@ -28,8 +28,8 @@
         task_dispatch_type_t type;  // asynchronous or synchronous
     } task_t;
 
-	typedef struct node {	// to create linked lists
-		void *item;
+	typedef struct node {	// to create linked lists of tasks
+		task_t *item;
 		struct node *next;
 	} node_t;
     
@@ -59,9 +59,9 @@
     
     void dispatch_queue_destroy(dispatch_queue_t *);
     
-    int dispatch_async(dispatch_queue_t *, task_t *);
+    void dispatch_async(dispatch_queue_t *, task_t *);
     
-    int dispatch_sync(dispatch_queue_t *, task_t *);
+    void dispatch_sync(dispatch_queue_t *, task_t *);
     
     void dispatch_for(dispatch_queue_t *, long, void (*)(long));
     

@@ -15,6 +15,8 @@
 
 // TODO memory checks for all mallocs
 
+void* execute_tasks(void *thread);
+
 /**
  * Creates a dispatch queue, setting up any associated threads and a linked list to be used by
  * the added tasks. The queueType is either CONCURRENT or SERIAL.
@@ -88,9 +90,12 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 }
 
-void execute_tasks(dispatch_queue_thread_t *thread) {
+void *execute_tasks(void *threadUncast) {
 
-	while (true) {
+	// Cast the thread
+	dispatch_queue_thread_t *thread = (dispatch_queue_thread_t*)threadUncast;
+
+	while (1) {
 
 		// Wait on the thread semaphore for a task to become available
 		sem_wait(&(thread->queue->thread_semaphore));
@@ -99,22 +104,22 @@ void execute_tasks(dispatch_queue_thread_t *thread) {
 		sem_wait(&(thread->queue->queue_lock));
 
 		// Grab the first task off the queue
-		task_t *task = &thread->queue->first_task->item;
+		task_t *task = thread->queue->first_task->item;
 
 		// Take the task out of the queue
-		thread->queue->first_task = &thread->queue->first_task->next;
+		thread->queue->first_task = thread->queue->first_task->next;
 
 		// Release the queue lock
 		sem_post(&(thread->queue->queue_lock));
 
 		// Update the current task
-		thread->task = &task;
+		thread->task = task;
 
 		// Execute the task
-		task->work(&task->params);
+		task->work(&(task->params));
 
 		// Destroy the task
-		task_destroy(&task);
+		task_destroy(task);
 
 	}
 }
