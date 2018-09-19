@@ -40,6 +40,8 @@ int getNumCores() {
  */
 dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
+	printf("Function called");
+
 	// Allocate memory to the queue
 	printf("Allocating memory to the queue.\n");
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
