@@ -188,7 +188,7 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 		dispatch_queue_thread_t *thread = &(queue->thread_pool[i]);
 
 		// Free the memory assigned to the thread
-		free(&thread);
+		// free(&thread);
 	}
 
 	// Free the memory allocated to the thread pool
