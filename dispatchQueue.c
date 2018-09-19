@@ -154,17 +154,17 @@ void *execute_tasks(void *threadUncast) {
 
 	while (1) {
 
-		int value;
-		sem_getvalue(&(thread->queue->thread_semaphore), &value);
-		printf("Thread semaphore has value %d\n", value);
+		// Check semaphore values
+		int value, newValue;
+		sem_getvalue(&(queue->thread_semaphore), &value);
+		printf("Create method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(queue->queue_lock), &value);
+		printf("Create method: queue lock has value %d\n", newValue);
 
 		printf("Waiting on the thread semaphore\n");
 
 		// Wait on the thread semaphore for a task to become available
 		sem_wait(&(thread->queue->thread_semaphore));
-
-		sem_getvalue(&(thread->queue->queue_lock), &value);
-		printf("Queue lock has value %d\n", value);
 
 		printf("Waiting for the queue lock\n");
 
