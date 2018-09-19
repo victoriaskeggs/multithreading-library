@@ -41,7 +41,7 @@ int getNumCores() {
 dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Allocate memory to the queue
-	printf("Allocating memory to the queue.\n");
+	//printf("Allocating memory to the queue.\n");
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
 
 	// Check memory was successfully allocated
@@ -49,14 +49,14 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		printf("Not enough memory available to create a queue.");
 		exit(ERROR_STATUS);
 	}
-	printf("Memory was allocated.\n");
+	//printf("Memory was allocated.\n");
 
 	// Set the type of the queue (SERIAL or CONCURRENT)
 	queue->queue_type = &queueType;
 
 	// Create a semaphore for the queue and lock the queue
 	sem_init(&(queue->queue_lock), P_SHARED, 0);
-	printf("Semaphore was created\n");
+	//printf("Semaphore was created\n");
 
 	// Find the number of threads that the thread pool should contain. An async queue should contain one
 	// thread and a sync queue should contain the same number of threads as there are physical cores.
@@ -74,7 +74,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	queue->first_task = NULL;
 
 	// Allocate memory to the thread pool
-	printf("Allocating memory to the thread pool\n");
+	//printf("Allocating memory to the thread pool\n");
 	queue->thread_pool = malloc(numThreads * sizeof(dispatch_queue_thread_t));
 
 	// Check memory was successfully allocated
@@ -83,12 +83,12 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		exit(ERROR_STATUS);
 	}
 
-	printf("Memory allocated\n");
+	//printf("Memory allocated\n");
 
 	// Create a semaphore for the threads to wait on - no tasks allocated
 	sem_init(&(queue->thread_semaphore), P_SHARED, 0);
 
-	printf("Thread semaphore created\n");
+	//printf("Thread semaphore created\n");
 
 	// Check semaphore values
 	int value, newValue;
@@ -102,7 +102,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
 
-		printf("For loop entered\n");
+		//printf("For loop entered\n");
 
 		// Create a new thread type and allocate memory
 		dispatch_queue_thread_t *thread = malloc(sizeof(dispatch_queue_thread_t));
@@ -113,31 +113,38 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 			exit(ERROR_STATUS);
 		}
 
-		printf("About to point thread to queue\n");
+		//printf("About to point thread to queue\n");
 		thread->queue = queue;
-		printf("Pointed thread to queue\n");
+		//printf("Pointed thread to queue\n");
 
 		// Add the thread type to the pool
-		printf("About to add thread type to pool\n");
+		//printf("About to add thread type to pool\n");
 		queue->thread_pool[i] = *thread;
-		printf("Added thread type to pool\n");
+		//printf("Added thread type to pool\n");
 
-		printf("Creating pthread number %d\n", i);
+		//printf("Creating pthread number %d\n", i);
 
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, &thread)) {
 			printf("Error creating thread\n");
 			exit(ERROR_STATUS);
 		}
-		printf("pthread %d created\n", i);
+		// Check semaphore values
+		int value, newValue;
+		sem_getvalue(&(queue->thread_semaphore), &value);
+		printf("Create method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(queue->queue_lock), &newValue);
+		printf("Create method: queue lock has value %d\n", newValue);
+
+		//printf("pthread %d created\n", i);
 	}
 
-	printf("Threads added to the pool\n");
+	//printf("Threads added to the pool\n");
 
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
 
-	printf("Queue unlocked\n");
+	//printf("Queue unlocked\n");
 
 	return queue;
 
@@ -145,12 +152,12 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 void *execute_tasks(void *threadUncast) {
 
-	printf("Execute tasks is executed\n");
+	//printf("Execute tasks is executed\n");
 
 	// Cast the thread
 	dispatch_queue_thread_t *thread = (dispatch_queue_thread_t*)threadUncast;
 
-	printf("Thread has been cast\n");
+	//printf("Thread has been cast\n");
 
 	while (1) {
 
@@ -176,8 +183,12 @@ void *execute_tasks(void *threadUncast) {
 		// Grab the first task off the queue
 		task_t *task = thread->queue->first_task->item;
 
+		printf("Grabbed the task\n");
+
 		// Take the task out of the queue
 		thread->queue->first_task = thread->queue->first_task->next;
+
+		printf("Removed the task from the queue\n");
 
 		// Release the queue lock
 		sem_post(&(thread->queue->queue_lock));
