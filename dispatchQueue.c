@@ -41,6 +41,7 @@ int getNumCores() {
 dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Allocate memory to the queue
+	printf("Allocating memory to the queue.\n");
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
 
 	// Check memory was successfully allocated
@@ -48,17 +49,19 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		printf("Not enough memory available to create a queue.");
 		exit(ERROR_STATUS);
 	}
+	printf("Memory was allocated.\n");
 
 	// Set the type of the queue (SERIAL or CONCURRENT)
 	queue->queue_type = &queueType;
 
 	// Create a semaphore for the queue and lock the queue
 	sem_init(&(queue->queue_lock), P_SHARED, 0);
+	printf("Semaphore was created\n");
 
 	// Find the number of threads that the thread pool should contain. An async queue should contain one
 	// thread and a sync queue should contain the same number of threads as there are physical cores.
-	int numThreads; 
-	
+	int numThreads;
+
 	if (*(queue->queue_type) == SERIAL) {
 		numThreads = 1;
 	}
@@ -71,6 +74,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	queue->first_task = NULL;
 
 	// Allocate memory to the thread pool
+	printf("Allocating memory to the thread pool\n");
 	queue->thread_pool = malloc(numThreads * sizeof(dispatch_queue_thread_t));
 
 	// Check memory was successfully allocated
@@ -79,8 +83,12 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		exit(ERROR_STATUS);
 	}
 
+	printf("Memory allocated\n");
+
 	// Create a semaphore for the threads to wait on - no tasks allocated
 	sem_init(&(queue->thread_semaphore), P_SHARED, 0);
+
+	printf("Thread semaphore created\n");
 
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
@@ -99,8 +107,12 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		}
 	}
 
+	printf("Threads added to the pool\n");
+
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
+
+	printf("Queue unlocked\n");
 
 	return queue;
 
