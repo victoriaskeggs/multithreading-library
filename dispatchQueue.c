@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include "dispatchQueue.h"
-#include "num_cores.c"
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,6 +15,23 @@
 // TODO memory checks for all mallocs
 
 void* execute_tasks(void *thread);
+
+/*
+* Finds the number of physical cores on the device.
+*/
+int getNumCores() {
+	// Bash command to retrieve number of physical cores
+	char command[] = "grep ^cpu\\\\scores /proc/cpuinfo | uniq | awk '{print $4}'";
+
+	// Read number of cores into a file
+	FILE* commandFile = popen(command, "r");
+
+	// Retrieve number of cores
+	int numCores;
+	fscanf(commandFile, "%d", &numCores);
+
+	return numCores;
+}
 
 /**
  * Creates a dispatch queue, setting up any associated threads and a linked list to be used by
