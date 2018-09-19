@@ -40,8 +40,6 @@ int getNumCores() {
  */
 dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
-	printf("Function called");
-
 	// Allocate memory to the queue
 	printf("Allocating memory to the queue.\n");
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
@@ -102,11 +100,14 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		// Add the thread type to the pool
 		queue->thread_pool[i] = *thread;
 
+		printf("Creating pthread number %d\n", i);
+
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, &thread)) {
 			printf("Error creating thread\n");
 			exit(ERROR_STATUS);
 		}
+		printf("pthread %d created\n", i);
 	}
 
 	printf("Threads added to the pool\n");
