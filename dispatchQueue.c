@@ -167,7 +167,7 @@ void *execute_tasks(void *threadUncast) {
 		sem_post(&(task->task_sem));
 
 		// Destroy the task
-		task_destroy(task);		
+		task_destroy(task);
 
 	}
 }
@@ -275,7 +275,7 @@ void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
 void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
 	// Dispatch the task
-	dispatch(queue, task, ASYNC);	
+	dispatch(queue, task, ASYNC);
 }
 
 /*
@@ -322,27 +322,27 @@ void dispatch(dispatch_queue_t *queue, task_t *task, task_dispatch_type_t type) 
 	sem_post(&(queue->thread_semaphore));
 }
 /*
- * Waits (blocks) until all tasks on the queue have completed. If new tasks are 
- * added to the queue after this is called they are ignored. 
+ * Waits (blocks) until all tasks on the queue have completed. If new tasks are
+ * added to the queue after this is called they are ignored.
  */
 void dispatch_queue_wait(dispatch_queue_t *queue) {
-	
+
 	// Check the finish condition
-	while (queue->num_threads_executing!=0 || queue->first_task!=NULL) {}
+	while (queue->num_threads_executing != 0 || queue->first_task != NULL) {}
 }
 
 /*
- * Executes   the  work  function  number  of   times   (in   parallel   if   the  
+ * Executes   the  work  function  number  of   times   (in   parallel   if   the
  * queue is CONCURRENT).   Each iteration   of   the  work  function   is   passed
- * an   integer   from  0 to number-1.   The  dispatch_for function does not return 
+ * an   integer   from  0 to number-1.   The  dispatch_for function does not return
  * until all iterations of the work function have completed.
  */
 void dispatch_for(dispatch_queue_t *queue, long number, void(*work)(long)) {
 
 	// Dispatch all the tasks asynchronously
-	for (long i=0; i<number; i++) {
+	for (long i = 0; i < number; i++) {
 		char *name = "dispatch_for_work_function";
-		task_t *task = task_create((void (*)(void*))work, (void*)i, name);
+		task_t *task = task_create((void(*)(void*))work, (void*)i, name);
 		dispatch_async(queue, task);
 	}
 
