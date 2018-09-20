@@ -140,15 +140,15 @@ void *execute_tasks(void *threadUncast) {
 		printf("Execute tasks method: Thread points to address %p\n", thread);
 
 		// Check queue values
-		//printf("Queue type is %d", (int)*(thread->queue->queue_type));
-		//printf("Num threads is %d", thread->queue->num_threads);
+		printf("Queue type is %d", (int)*(thread->queue->queue_type));
+		printf("Num threads is %d", thread->queue->num_threads);
 
 		// Check semaphore values
-		//int value, newValue;
-		//sem_getvalue(&(thread->queue->thread_semaphore), &value);
-		//printf("Thread method: thread semaphore has value %d\n", value);
-		//sem_getvalue(&(thread->queue->queue_lock), &newValue);
-		//printf("Thread method: queue lock has value %d\n", newValue);
+		int value, newValue;
+		sem_getvalue(&(thread->queue->thread_semaphore), &value);
+		printf("Thread method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(thread->queue->queue_lock), &newValue);
+		printf("Thread method: queue lock has value %d\n", newValue);
 		
 		//printf("Exiting from thread method");
 		//exit(0);
