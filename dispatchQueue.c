@@ -118,7 +118,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
 
-	printf("Dispatch queue create: completed\n");
+	//printf("Dispatch queue create: completed\n");
 
 	return queue;
 
@@ -126,7 +126,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 void *execute_tasks(void *threadUncast) {
 
-	printf("Execute tasks: started\n");
+	//printf("Execute tasks: started\n");
 
 	// Cast the thread
 	dispatch_queue_thread_t *thread = (dispatch_queue_thread_t*)threadUncast;
@@ -183,12 +183,14 @@ void *execute_tasks(void *threadUncast) {
 		//sem_getvalue(&(thread->queue->queue_lock), &newValue);
 		//printf("Thread method: queue lock has value %d\n", newValue);
 
-		//printf("Grabbing a task\n");
+		printf("Grabbing a task\n");
+
+		printf("First task node address is %p\n", thread->queue->first_task);
 
 		// Grab the first task off the queue
 		task_t *task = thread->queue->first_task->item;
 
-		//printf("Grabbed the task\n");
+		printf("Grabbed the task\n");
 
 		// Take the task out of the queue
 		thread->queue->first_task = thread->queue->first_task->next;
@@ -220,6 +222,8 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
 	// Wait for the queue to become available
 	sem_wait(&(queue->queue_lock));
+
+	printf("Dispatch queue destroy: Got the lock\n");
 
 	// For every thread in the thread pool
 	for (int i = 0; i < queue->num_threads; i++) {
@@ -257,7 +261,7 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
  */
 task_t *task_create(void(*work)(void *), void *param, char* name) {
 
-	printf("Task create: called\n");
+	//printf("Task create: called\n");
 
 	// Create a task
 	task_t *thisTask = malloc(sizeof(task_t));
@@ -285,7 +289,7 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 	thisTask->params = param;
 
 	//printf("Create task: The task address is %p\n", thisTask);
-	printf("Create task: completed\n");
+	//printf("Create task: completed\n");
 
 	return thisTask;
 }
@@ -316,8 +320,8 @@ void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
  */
 void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
-	printf("Dispatch async: called\n");
-	printf("Dispatch async: task address is %p\n", task);
+	//printf("Dispatch async: called\n");
+	//printf("Dispatch async: task address is %p\n", task);
 
 	// Set task as async
 	task->type = ASYNC;
@@ -330,6 +334,8 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 		printf("Not enough memory available to add the task to the queue.\n");
 		exit(ERROR_STATUS);
 	}
+
+	printf("Dispatch async: the address of the task node is %p\n", newTask);
 
 	// Add the task to the task type
 	newTask->item = task;
@@ -347,10 +353,11 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 		currentTask = currentTask->next;
 	}
 
-	//printf("Dispatch async: found the end of the queue\n");
+	printf("Dispatch async: found the end of the queue\n");
 
 	// Add the new task
-	currentTask = newTask;
+	*currentTask = *newTask;
+	//newTask = currentTask;
 
 	//printf("Dispatch queue: Unlocking the queue and posting the semaphore\n");
 
@@ -360,5 +367,5 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	// Signal the threads that a new task is available
 	sem_post(&(queue->thread_semaphore));
 
-	printf("Dispatch async: completed. semaphores unlocked\n");
+	//printf("Dispatch async: completed. semaphores unlocked\n");
 }
