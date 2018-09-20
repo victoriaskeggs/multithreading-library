@@ -50,6 +50,7 @@
 		node_t *first_task;						// linked list of tasks
 		sem_t queue_lock;						// for locking the queue
 		sem_t thread_semaphore;					// the semaphore the threads wait on until a task is allocated
+		int num_threads_executing;					// indicates the number of threads executing a task
     };
     
     task_t *task_create(void (*)(void *), void *, char*);
@@ -66,6 +67,6 @@
     
     void dispatch_for(dispatch_queue_t *, long, void (*)(long));
     
-    int dispatch_queue_wait(dispatch_queue_t *);
+    void dispatch_queue_wait(dispatch_queue_t *);
 
 #endif	/* DISPATCHQUEUE_H */
