@@ -44,7 +44,7 @@
 
     struct dispatch_queue_t {
         queue_type_t *queue_type;				// the type of queue - serial or concurrent
-		dispatch_queue_thread_t *thread_pool;	// a dynamically sized thread pool to execute the tasks
+		dispatch_queue_thread_t **thread_pool;	// a dynamically sized thread pool to execute the tasks
 		int num_threads;						// the number of threads in the thread pool
 		node_t *first_task;						// linked list of tasks
 		sem_t queue_lock;						// for locking the queue
