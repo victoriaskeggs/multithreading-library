@@ -42,7 +42,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Allocate memory to the queue
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
-	printf("Create method: Queue points to address: %p", queue);
+	printf("Create method: Queue points to address: %p\n", queue);
 
 	// Check memory was successfully allocated
 	if (queue == NULL) {
@@ -67,6 +67,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		numThreads = getNumCores();
 	}
 	queue->num_threads = numThreads;
+	queue->num_threads = 1; // for debugging
 
 	// No tasks have been added to the queue
 	queue->first_task = NULL;
@@ -102,6 +103,8 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		// Add the thread type to the pool
 		queue->thread_pool[i] = *thread;
 
+		printf("Create method: Thread points to address: %p\n", &(queue->thread_pool[i]));
+
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, &thread)) {
 			printf("Error creating thread\n");
@@ -133,7 +136,8 @@ void *execute_tasks(void *threadUncast) {
 
 	while (1) {
 
-		printf("Execute tasks method: Queue points to address: %p", thread->queue);
+		printf("Execute tasks method: Queue points to address: %p\n", thread->queue);
+		printf("Execute tasks method: Thread points to address %p\n", thread);
 
 		// Check queue values
 		//printf("Queue type is %d", (int)*(thread->queue->queue_type));
