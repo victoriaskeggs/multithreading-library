@@ -323,41 +323,30 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	//printf("Dispatch async: called\n");
 	//printf("Dispatch async: task address is %p\n", task);
 
-	// Set task as async
-	task->type = ASYNC;
+	// Wait for the dispatch queue to become available
+	sem_wait(&(queue->queue_lock));
+
+	// Find the end of the task queue
+	node_t *currentNode = queue->first_task;
+	while (currentNode != NULL) {
+		currentNode = currentNode->next;
+	}
 
 	// Allocate memory to new task type
-	node_t *newTask = malloc(sizeof(node_t));
+	currentNode = malloc(sizeof(node_t));
 
 	// Check memory was successfully allocated
-	if (newTask == NULL) {
+	if (currentNode == NULL) {
 		printf("Not enough memory available to add the task to the queue.\n");
 		exit(ERROR_STATUS);
 	}
 
-	printf("Dispatch async: the address of the task node is %p\n", newTask);
+	currentNode->item = task;
 
-	// Add the task to the task type
-	newTask->item = task;
+	// Set task as async
+	currentNode->item->type = ASYNC;	
 
-	//printf("Dispatch async: after adding the task, task address is %p\n", newTask->item);
-
-	// Wait for the dispatch queue to become available
-	sem_wait(&(queue->queue_lock));
-
-	//printf("Dispatch async: Looking for the end of the queue\n");
-
-	// Find the end of the task queue
-	node_t *currentTask = queue->first_task;
-	while (currentTask != NULL) {
-		currentTask = currentTask->next;
-	}
-
-	printf("Dispatch async: found the end of the queue\n");
-
-	// Add the new task
-	*currentTask = *newTask;
-	//newTask = currentTask;
+	printf("Dispatch async: the address of the task node is %p\n", currentNode);
 
 	//printf("Dispatch queue: Unlocking the queue and posting the semaphore\n");
 
