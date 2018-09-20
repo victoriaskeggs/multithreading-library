@@ -220,19 +220,22 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 	// Wait for the queue to become available
 	sem_wait(&(queue->queue_lock));
 
+	// For every thread in the thread pool
+	for (int i = 0; i < queue->num_threads; i++) {
+		dispatch_queue_thread_t *thread = queue->thread_pool[i];
+
+		// Cancel the thread
+		pthread_cancel(thread->thread);
+
+		// Free the memory assigned to the thread
+		free(thread);
+	}
+
 	// Destroy the queue's lock
 	sem_destroy(&(queue->queue_lock));
 
 	// Destroy the thread semaphore
 	sem_destroy(&(queue->thread_semaphore));
-
-	// For every thread in the thread pool
-	for (int i = 0; i < queue->num_threads; i++) {
-		dispatch_queue_thread_t *thread = queue->thread_pool[i];
-
-		// Free the memory assigned to the thread
-		free(thread);
-	}
 
 	// Free the memory allocated to the thread pool
 	free(queue->thread_pool);
