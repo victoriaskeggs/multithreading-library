@@ -383,8 +383,24 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 void dispatch_queue_wait(dispatch_queue_t *queue) {
 	
 	// Check the finish condition
-	while (queue->num_threads_executing!=0 || queue->first_task!=NULL) {
+	while (queue->num_threads_executing!=0 || queue->first_task!=NULL) {}
+}
 
+/*
+ * Executes   the  work  function  number  of   times   (in   parallel   if   the  
+ * queue is CONCURRENT).   Each iteration   of   the  work  function   is   passed
+ * an   integer   from  0 to number-1.   The  dispatch_forfunction does not return 
+ * until all iterations of the work function have completed.
+ */
+void dispatch_for(dispatch_queue_t *queue, long number, void(*work)(long)) {
+
+
+	// Dispatch all the tasks asynchronously
+	for (int i=0; i<number; i++) {
+		task_t *task = task_create(work);
+		dispatch_async(queue, task);
 	}
 
+	// Wait for all the tasks to complete
+	dispatch_queue_wait();
 }
