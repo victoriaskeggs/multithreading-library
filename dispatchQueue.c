@@ -156,19 +156,33 @@ void *execute_tasks(void *threadUncast) {
 		// Check thread values
 		//printf("Number of threads: %d\n", thread->queue->num_threads);
 
-		//printf("Waiting on the task semaphore. Value is %d\n", sem_value(&(thread->queue->thread_semaphore))); 
+		printf("Thread method: Waiting on the task semaphore.\n");
+		//Check semaphore values
+		int value, newValue;
+		sem_getvalue(&(thread->queue->thread_semaphore), &value);
+		printf("Thread method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(thread->queue->queue_lock), &newValue);
+		printf("Thread method: queue lock has value %d\n", newValue);
 
 		// Wait on the thread semaphore for a task to become available
 		sem_wait(&(thread->queue->thread_semaphore));
 
-		//printf("Waiting for the queue lock. Value is %d\n", sem_value(&thread->queue->queue_lock)));
-
-		//printf("Thread method: after waiting for the task semaphore, value is %d\n", sem_getvalue(&(thread->queue->thread_semaphore)));
+		printf("Thread method: Waiting for the queue lock\n");
+		//Check semaphore values
+		sem_getvalue(&(thread->queue->thread_semaphore), &value);
+		printf("Thread method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(thread->queue->queue_lock), &newValue);
+		printf("Thread method: queue lock has value %d\n", newValue);
 
 		// Wait for the queue to become available
 		sem_wait(&(thread->queue->queue_lock));
 
-		//printf("After waiting for the queue lock, value is %d\n", sem_getvalue(&(thread->queue->queue_lock)));
+		printf("Thread method: Past all the locks\n");
+		//Check semaphore values
+		sem_getvalue(&(thread->queue->thread_semaphore), &value);
+		printf("Thread method: thread semaphore has value %d\n", value);
+		sem_getvalue(&(thread->queue->queue_lock), &newValue);
+		printf("Thread method: queue lock has value %d\n", newValue);
 
 		printf("Grabbing a task\n");
 
