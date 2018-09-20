@@ -41,7 +41,6 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Allocate memory to the queue
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
-	//printf("Create method: Queue points to address: %p\n", queue);
 
 	// Check memory was successfully allocated
 	if (queue == NULL) {
@@ -103,14 +102,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 			exit(ERROR_STATUS);
 		}
 
-		//printf("About to point thread to queue\n");
 		thread->queue = queue;
-		//printf("Pointed thread to queue\n");
 
 		// Add the thread type to the pool
 		queue->thread_pool[i] = thread;
-
-		//printf("Create method: Thread points to address: %p\n", queue->thread_pool[i]);
 
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, thread)) {
@@ -118,15 +113,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 			exit(ERROR_STATUS);
 		}
 
-		//printf("Queue type is %d\n", queue->queue_type);
-		//printf("Create method: Num threads is %d\n", queue->num_threads);
-
 	}
 
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
-
-	//printf("Dispatch queue create: completed\n");
 
 	return queue;
 
@@ -187,12 +177,8 @@ void *execute_tasks(void *threadUncast) {
  */
 void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
-	//printf("Dispatch queue destroy: called\n");
-
 	// Wait for the queue to become available
 	sem_wait(&(queue->queue_lock));
-
-	//printf("Dispatch queue destroy: Got the lock\n");
 
 	// For every thread in the thread pool
 	for (int i = 0; i < queue->num_threads; i++) {
@@ -216,8 +202,6 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
 	// Free the memory allocated to the queue
 	free(queue);
-
-	//printf("Dispath queue destroy: queue destroyed\n");
 }
 
 /*
@@ -230,8 +214,6 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
  */
 task_t *task_create(void(*work)(void *), void *param, char* name) {
 
-	//printf("Task create: called\n");
-
 	// Create a task
 	task_t *thisTask = malloc(sizeof(task_t));
 
@@ -241,13 +223,8 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 		exit(ERROR_STATUS);
 	}
 
-	//printf("Memory allocated to task\n");
-	//printf("Copying name of task\n");
-
 	// Set the name of the task
 	strcpy(thisTask->name, name);
-
-	//printf("Adding work to task\n");
 
 	// Set the work for the task
 	thisTask->work = work;
@@ -260,9 +237,6 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 		printf("Unable to create a semaphore to indicate a task has completed.\n");
 		exit(ERROR_STATUS);
 	}
-
-	//printf("Create task: The task address is %p\n", thisTask);
-	//printf("Create task: completed\n");
 
 	return thisTask;
 }
@@ -278,7 +252,6 @@ void task_destroy(task_t *task) {
 
 	// Free memory allocated to the task
 	free(task);
-	//printf("Task destroy: compelted\n");
 }
 
 /*
@@ -333,9 +306,6 @@ void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
  */
 void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
-	//printf("Dispatch async: called\n");
-	//printf("Dispatch async: task address is %p\n", task);
-
 	// Wait for the dispatch queue to become available
 	sem_wait(&(queue->queue_lock));
 
@@ -371,8 +341,6 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
 	// Signal the threads that a new task is available
 	sem_post(&(queue->thread_semaphore));
-
-	//printf("Dispatch async: completed. semaphores unlocked\n");
 }
 
 /*
