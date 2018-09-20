@@ -313,14 +313,20 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	// Wait for the dispatch queue to become available
 	sem_wait(&(queue->queue_lock));
 
+	printf("Dispatch async: Looking for the end of the queue\n");
+
 	// Find the end of the task queue
 	node_t *currentTask = queue->first_task;
 	while (currentTask != NULL) {
 		currentTask = currentTask->next;
 	}
 
+	printf("Dispatch async: found the end of the queue\n");
+
 	// Add the new task
 	currentTask = newTask;
+
+	printf("Dispatch queue: Unlocking the queue and posting the semaphore\n");
 
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
