@@ -42,7 +42,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Allocate memory to the queue
 	dispatch_queue_t *queue = malloc(sizeof(dispatch_queue_t));
-	printf("Create method: Queue points to address: %p\n", queue);
+	//printf("Create method: Queue points to address: %p\n", queue);
 
 	// Check memory was successfully allocated
 	if (queue == NULL) {
@@ -103,7 +103,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		// Add the thread type to the pool
 		queue->thread_pool[i] = thread;
 
-		printf("Create method: Thread points to address: %p\n", queue->thread_pool[i]);
+		//printf("Create method: Thread points to address: %p\n", queue->thread_pool[i]);
 
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, thread)) {
@@ -244,11 +244,18 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 		exit(ERROR_STATUS);
 	}
 
+	printf("Memory allocated to task\n");
+	printf("Copying name of task\n");
+
 	// Set the name of the task
 	strcpy(thisTask->name, name);
 
+	printf("Adding work to task\n");
+
 	// Set the work for the task
 	thisTask->work = work;
+
+	printf("Setting task parameters\n");
 
 	// Set the parameters for the work
 	thisTask->params = param;
