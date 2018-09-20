@@ -192,6 +192,16 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 		free(thread);
 	}
 
+	// Free any tasks still on the queue
+	if (queue->first_task != NULL) {
+		node_t *currentNode = queue->first_task;
+		while (currentNode->next != NULL) {
+			currentNode = currentNode->next;
+			task_destroy(currentNode->item);
+			free(currentNode);
+		}
+	}
+
 	// Destroy the queue's lock
 	sem_destroy(&(queue->queue_lock));
 
