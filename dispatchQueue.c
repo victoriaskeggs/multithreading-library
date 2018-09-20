@@ -156,27 +156,31 @@ void *execute_tasks(void *threadUncast) {
 		// Check thread values
 		//printf("Number of threads: %d\n", thread->queue->num_threads);
 
-		//printf("Waiting on the thread semaphore\n");
+		//printf("Waiting on the task semaphore. Value is %d\n", sem_value(&(thread->queue->thread_semaphore))); 
 
 		// Wait on the thread semaphore for a task to become available
 		sem_wait(&(thread->queue->thread_semaphore));
 
-		//printf("Waiting for the queue lock\n");
+		//printf("Waiting for the queue lock. Value is %d\n", sem_value(&thread->queue->queue_lock)));
+
+		//printf("Thread method: after waiting for the task semaphore, value is %d\n", sem_getvalue(&(thread->queue->thread_semaphore)));
 
 		// Wait for the queue to become available
 		sem_wait(&(thread->queue->queue_lock));
 
-		//printf("Grabbing a task\n");
+		//printf("After waiting for the queue lock, value is %d\n", sem_getvalue(&(thread->queue->queue_lock)));
+
+		printf("Grabbing a task\n");
 
 		// Grab the first task off the queue
 		task_t *task = thread->queue->first_task->item;
 
-		//printf("Grabbed the task\n");
+		printf("Grabbed the task\n");
 
 		// Take the task out of the queue
 		thread->queue->first_task = thread->queue->first_task->next;
 
-		//printf("Removed the task from the queue\n");
+		printf("Removed the task from the queue\n");
 
 		// Release the queue lock
 		sem_post(&(thread->queue->queue_lock));
@@ -333,4 +337,6 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
 	// Signal the threads that a new task is available
 	sem_post(&(queue->thread_semaphore));
+
+	printf("Dispatch queue: semaphores unlocked\n");
 }
