@@ -8,11 +8,10 @@
 #include "dispatchQueue.h"
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h> // TODO: remove
 
 #define ERROR_STATUS 1
 #define P_SHARED 0 // semaphores are shared between different threads on the same process
-
-// TODO memory checks for all mallocs
 
 void* execute_tasks(void *thread);
 
@@ -162,7 +161,7 @@ void *execute_tasks(void *threadUncast) {
 		thread->task = task;
 
 		// Execute the task
-		task->work(&(task->params));
+		task->work(task->params);
 
 		// Wait for the queue to become available
 		sem_wait(&(thread->queue->queue_lock));
@@ -394,11 +393,13 @@ void dispatch_queue_wait(dispatch_queue_t *queue) {
  */
 void dispatch_for(dispatch_queue_t *queue, long number, void(*work)(long)) {
 
-
 	// Dispatch all the tasks asynchronously
 	for (long i=0; i<number; i++) {
+		long *counter = malloc(sizeof(counter));
+		*counter = i;
 		char *name = "dispatch_for_work_function";
-		task_t *task = task_create((void (*)(void*))work, &i, name);
+		printf("value reads: %ld\n", *counter);
+		task_t *task = task_create((void (*)(void*))work, counter, name);
 		dispatch_async(queue, task);
 	}
 
