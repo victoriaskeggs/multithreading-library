@@ -103,7 +103,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 		// Add the thread type to the pool
 		queue->thread_pool[i] = *thread;
 
-		printf("Create method: Thread points to address: %p\n", &(queue->thread_pool[i]));
+		printf("Create method: Thread points to address: %p\n", queue->thread_pool[i]);
 
 		// Start the thread dispatching tasks off the end of the queue
 		if (pthread_create(&(thread->thread), NULL, execute_tasks, &thread)) {
