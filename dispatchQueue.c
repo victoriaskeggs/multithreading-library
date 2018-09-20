@@ -395,11 +395,8 @@ void dispatch_for(dispatch_queue_t *queue, long number, void(*work)(long)) {
 
 	// Dispatch all the tasks asynchronously
 	for (long i=0; i<number; i++) {
-		long *counter = malloc(sizeof(counter));
-		*counter = i;
 		char *name = "dispatch_for_work_function";
-		printf("value reads: %ld\n", *counter);
-		task_t *task = task_create((void (*)(void*))work, counter, name);
+		task_t *task = task_create((void (*)(void*))work, (void*)i, name);
 		dispatch_async(queue, task);
 	}
 
