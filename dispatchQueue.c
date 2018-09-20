@@ -183,19 +183,19 @@ void *execute_tasks(void *threadUncast) {
 		//sem_getvalue(&(thread->queue->queue_lock), &newValue);
 		//printf("Thread method: queue lock has value %d\n", newValue);
 
-		printf("Grabbing a task\n");
+		//printf("Grabbing a task\n");
 
-		printf("First task node address is %p\n", thread->queue->first_task);
+		//printf("First task node address is %p\n", thread->queue->first_task);
 
 		// Grab the first task off the queue
 		task_t *task = thread->queue->first_task->item;
 
-		printf("Grabbed the task\n");
+		//printf("Grabbed the task\n");
 
 		// Take the task out of the queue
 		thread->queue->first_task = thread->queue->first_task->next;
 
-		printf("Removed the task from the queue\n");
+		//printf("Removed the task from the queue\n");
 
 		// Release the queue lock
 		sem_post(&(thread->queue->queue_lock));
@@ -218,12 +218,12 @@ void *execute_tasks(void *threadUncast) {
  */
 void dispatch_queue_destroy(dispatch_queue_t *queue) {
 
-	printf("Dispatch queue destroy: called\n");
+	//printf("Dispatch queue destroy: called\n");
 
 	// Wait for the queue to become available
 	sem_wait(&(queue->queue_lock));
 
-	printf("Dispatch queue destroy: Got the lock\n");
+	//printf("Dispatch queue destroy: Got the lock\n");
 
 	// For every thread in the thread pool
 	for (int i = 0; i < queue->num_threads; i++) {
@@ -248,7 +248,7 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
 	// Free the memory allocated to the queue
 	free(queue);
 
-	printf("Dispath queue destroy: queue destroyed\n");
+	//printf("Dispath queue destroy: queue destroyed\n");
 }
 
 /*
@@ -300,10 +300,10 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
  */
 void task_destroy(task_t *task) {
 
-	printf("Task destroy: called\n");
+	//printf("Task destroy: called\n");
 	// Free memory allocated to the task
 	free(task);
-	printf("Task destroy: compelted\n");
+	//printf("Task destroy: compelted\n");
 }
 
 /*
