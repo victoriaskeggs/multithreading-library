@@ -260,41 +260,8 @@ void task_destroy(task_t *task) {
  */
 void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
 
-	// Wait for the dispatch queue to become available
-	sem_wait(&(queue->queue_lock));
-
-	// Allocate memory to new task type
-	node_t* newNode = malloc(sizeof(node_t));
-
-	// Check memory was successfully allocated
-	if (newNode == NULL) {
-		printf("Not enough memory available to add the task to the queue.\n");
-		exit(ERROR_STATUS);
-	}
-
-	// Add the task
-	newNode->item = task;
-
-	// Set task as async
-	newNode->item->type = SYNC;	
-
-	// Find the end of the task queue
-	if (queue->first_task == NULL) {
-		queue->first_task = newNode;
-	}
-	else {
-		node_t *currentNode = queue->first_task;
-		while (currentNode->next != NULL) {
-			currentNode = currentNode->next;
-		}
-		currentNode->next = newNode;
-	}
-
-	// Unlock the queue
-	sem_post(&(queue->queue_lock));
-
-	// Signal the threads that a new task is available
-	sem_post(&(queue->thread_semaphore));
+	// Dispatch the task
+	dispatch(queue, task, SYNC);
 
 	// Wait for the task to complete
 	sem_wait(&(task->task_sem));
@@ -306,6 +273,17 @@ void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
  */
 void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
+	// Dispatch the task
+	dispatch(queue, task, ASYNC);	
+}
+
+/*
+ * Sends the task to the queue (which could be either CONCURRENT or SERIAL). This function
+ * returns immediately, the task will be dispatched sometime in the future. Sets the task
+ * to type.
+ */
+void dispatch(dispatch_queue_t *queue, task_t *task, task_dispatch_type_t type) {
+
 	// Wait for the dispatch queue to become available
 	sem_wait(&(queue->queue_lock));
 
@@ -322,7 +300,7 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	newNode->item = task;
 
 	// Set task as async
-	newNode->item->type = ASYNC;	
+	newNode->item->type = type;
 
 	// Find the end of the task queue
 	if (queue->first_task == NULL) {
@@ -342,7 +320,6 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	// Signal the threads that a new task is available
 	sem_post(&(queue->thread_semaphore));
 }
-
 /*
  * Waits (blocks) until all tasks on the queue have completed. If new tasks are 
  * added to the queue after this is called they are ignored. 
