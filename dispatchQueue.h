@@ -26,6 +26,7 @@
         void (*work)(void *);       // the function to perform
         void *params;               // parameters to pass to the function
         task_dispatch_type_t type;  // asynchronous or synchronous
+	sem_t task_sem;		    // for waiting for the task to complete
     } task_t;
 
 	typedef struct node {	// to create linked lists of tasks

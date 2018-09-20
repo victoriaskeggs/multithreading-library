@@ -46,7 +46,7 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 	// Check memory was successfully allocated
 	if (queue == NULL) {
-		printf("Not enough memory available to create a queue.");
+		printf("Not enough memory available to create a queue.\n");
 		exit(ERROR_STATUS);
 	}
 
@@ -54,7 +54,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	queue->queue_type = &queueType;
 
 	// Create a semaphore for the queue and lock the queue
-	sem_init(&(queue->queue_lock), P_SHARED, 0);
+	if (sem_init(&(queue->queue_lock), P_SHARED, 0) != 0) {
+		printf("Unable to create a lock semaphore for the queue.\n");
+		exit(ERROR_STATUS);
+	}
 
 	// Find the number of threads that the thread pool should contain. An async queue should contain one
 	// thread and a sync queue should contain the same number of threads as there are physical cores.
@@ -81,7 +84,10 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 	}
 
 	// Create a semaphore for the threads to wait on - no tasks allocated
-	sem_init(&(queue->thread_semaphore), P_SHARED, 0);
+	if (sem_init(&(queue->thread_semaphore), P_SHARED, 0) != 0) {
+		printf("Unable to a semaphore for threads to wait on.\n");
+		exit(ERROR_STATUS);
+	}
 
 	// Add threads to the thread pool
 	for (int i = 0; i < numThreads; i++) {
@@ -206,6 +212,9 @@ void *execute_tasks(void *threadUncast) {
 		// Execute the task
 		task->work(&(task->params));
 
+		// Indicate the task is complete
+		sem_post(&(task->task_sem));
+
 		// Destroy the task
 		task_destroy(task);
 
@@ -288,6 +297,12 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
 	// Set the parameters for the work
 	thisTask->params = param;
 
+	// Initialise a semaphore for indicating when a task has completed
+	if (sem_init(&(thisTask->task_sem), P_SHARED, 0) != 0) {
+		printf("Unable to create a semaphore to indicate a task has completed.\n");
+		exit(ERROR_STATUS);
+	}
+
 	//printf("Create task: The task address is %p\n", thisTask);
 	//printf("Create task: completed\n");
 
@@ -300,7 +315,9 @@ task_t *task_create(void(*work)(void *), void *param, char* name) {
  */
 void task_destroy(task_t *task) {
 
-	//printf("Task destroy: called\n");
+	// Destroy the semaphore on the task
+	sem_destroy(&(task->task_sem));
+
 	// Free memory allocated to the task
 	free(task);
 	//printf("Task destroy: compelted\n");
@@ -311,7 +328,45 @@ void task_destroy(task_t *task) {
  * not return to the calling thread until the task has been completed.
  */
 void dispatch_sync(dispatch_queue_t *queue, task_t *task) {
-	// TODO
+
+	// Wait for the dispatch queue to become available
+	sem_wait(&(queue->queue_lock));
+
+	// Allocate memory to new task type
+	node_t* newNode = malloc(sizeof(node_t));
+
+	// Check memory was successfully allocated
+	if (newNode == NULL) {
+		printf("Not enough memory available to add the task to the queue.\n");
+		exit(ERROR_STATUS);
+	}
+
+	// Add the task
+	newNode->item = task;
+
+	// Set task as async
+	newNode->item->type = SYNC;	
+
+	// Find the end of the task queue
+	if (queue->first_task == NULL) {
+		queue->first_task = newNode;
+	}
+	else {
+		node_t *currentNode = queue->first_task;
+		while (currentNode->next != NULL) {
+			currentNode = currentNode->next;
+		}
+		currentNode->next = newNode;
+	}
+
+	// Unlock the queue
+	sem_post(&(queue->queue_lock));
+
+	// Signal the threads that a new task is available
+	sem_post(&(queue->thread_semaphore));
+
+	// Wait for the task to complete
+	sem_wait(&(task->task_sem));
 }
 
 /*
