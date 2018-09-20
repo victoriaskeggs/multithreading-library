@@ -9,7 +9,6 @@
 
 void for_test(long i) {
     long counter = 0;
-    printf("i is %ld\n", i);
     for (; i < 1000000000; i++)
         counter++;
     printf("The number is %ld\n", counter);
