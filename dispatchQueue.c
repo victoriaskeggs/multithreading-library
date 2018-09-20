@@ -8,12 +8,13 @@
 #include "dispatchQueue.h"
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // TODO: remove
 
 #define ERROR_STATUS 1
 #define P_SHARED 0 // semaphores are shared between different threads on the same process
 
+// Helper methods
 void* execute_tasks(void *thread);
+void dispatch(dispatch_queue_t *queue, task_t *task, task_dispatch_type_t type);
 
 /*
 * Finds the number of physical cores on the device.

@@ -8,7 +8,6 @@
 #include <stdlib.h>
 
 void for_test(long i) {
-	printf("i is %ld\n", i);
     long counter = 0;
     for (; i < 1000000000; i++)
         counter++;
