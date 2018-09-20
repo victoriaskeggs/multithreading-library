@@ -326,30 +326,32 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 	// Wait for the dispatch queue to become available
 	sem_wait(&(queue->queue_lock));
 
-	// Find the end of the task queue
-	node_t *currentNode = queue->first_task;
-	while (currentNode->next != NULL) {
-		currentNode = currentNode;
-	}
-
 	// Allocate memory to new task type
-	currentNode = malloc(sizeof(node_t));
+	node_t* newNode = malloc(sizeof(node_t));
 
 	// Check memory was successfully allocated
-	if (currentNode == NULL) {
+	if (newNode == NULL) {
 		printf("Not enough memory available to add the task to the queue.\n");
 		exit(ERROR_STATUS);
 	}
 
 	// Add the task
-	currentNode->item = task;
+	newNode->item = task;
 
 	// Set task as async
-	currentNode->item->type = ASYNC;	
+	newNode->item->type = ASYNC;	
 
-	printf("Dispatch async: the address of the task node is %p\n", currentNode);
-
-	//printf("Dispatch queue: Unlocking the queue and posting the semaphore\n");
+	// Find the end of the task queue
+	if (queue->first_task == NULL) {
+		queue->first_task = newNode;
+	}
+	else {
+		node_t *currentNode = queue->first_task;
+		while (currentNode->next != NULL) {
+			currentNode = currentNode->next;
+		}
+		currentNode->next = newNode;
+	}
 
 	// Unlock the queue
 	sem_post(&(queue->queue_lock));
