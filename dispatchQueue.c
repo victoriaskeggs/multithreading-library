@@ -235,6 +235,8 @@ void dispatch_queue_destroy(dispatch_queue_t *queue) {
  */
 task_t *task_create(void(*work)(void *), void *param, char* name) {
 
+	printf("Task create called\n");
+
 	// Create a task
 	task_t *thisTask = malloc(sizeof(task_t));
 
