@@ -389,18 +389,19 @@ void dispatch_queue_wait(dispatch_queue_t *queue) {
 /*
  * Executes   the  work  function  number  of   times   (in   parallel   if   the  
  * queue is CONCURRENT).   Each iteration   of   the  work  function   is   passed
- * an   integer   from  0 to number-1.   The  dispatch_forfunction does not return 
+ * an   integer   from  0 to number-1.   The  dispatch_for function does not return 
  * until all iterations of the work function have completed.
  */
 void dispatch_for(dispatch_queue_t *queue, long number, void(*work)(long)) {
 
 
 	// Dispatch all the tasks asynchronously
-	for (int i=0; i<number; i++) {
-		task_t *task = task_create(work);
+	for (long i=0; i<number; i++) {
+		char *name = "dispatch_for_work_function";
+		task_t *task = task_create((void (*)(void*))work, &i, name);
 		dispatch_async(queue, task);
 	}
 
 	// Wait for all the tasks to complete
-	dispatch_queue_wait();
+	dispatch_queue_wait(queue);
 }
