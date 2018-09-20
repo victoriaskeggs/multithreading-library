@@ -328,8 +328,8 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 
 	// Find the end of the task queue
 	node_t *currentNode = queue->first_task;
-	while (currentNode != NULL) {
-		currentNode = currentNode->next;
+	while (currentNode->next != NULL) {
+		currentNode = currentNode;
 	}
 
 	// Allocate memory to new task type
@@ -341,6 +341,7 @@ void dispatch_async(dispatch_queue_t *queue, task_t *task) {
 		exit(ERROR_STATUS);
 	}
 
+	// Add the task
 	currentNode->item = task;
 
 	// Set task as async
