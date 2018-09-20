@@ -130,8 +130,8 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 			exit(ERROR_STATUS);
 		}
 
-		printf("Exiting from create method\n");
-		exit(0);
+		//printf("Exiting from create method\n");
+		//exit(0);
 
 		// Check semaphore values
 		//int value, newValue;
@@ -164,6 +164,10 @@ void *execute_tasks(void *threadUncast) {
 	//printf("Thread has been cast\n");
 
 	while (1) {
+
+		// Check queue values
+		printf("Queue type is %s", *(thread->queue->queue_type));
+		printf("Num threads is %s", thread->queue->num_threads);
 
 		// Check semaphore values
 		int value, newValue;
