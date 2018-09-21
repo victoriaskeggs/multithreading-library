@@ -123,6 +123,11 @@ dispatch_queue_t *dispatch_queue_create(queue_type_t queueType) {
 
 }
 
+/*
+ * Continously pulls tasks off the dispatch queue *threadUncast points to and executes them. Tasks are 
+ * destroyed after they are completed.
+ *
+ */
 void *execute_tasks(void *threadUncast) {
 
 	// Cast the thread
